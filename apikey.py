@@ -1,1 +1,2 @@
-apikey = " [Your API key here] "
+apikey = "[Your OpenAI API Key Here]"
+serpapikey = "[Your Serpapi API Key Here]"
