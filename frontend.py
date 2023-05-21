@@ -1,7 +1,9 @@
 import os
-from apikey import openapikey, serpapikey
+# from apikey import openapikey, serpapikey
+from apikeylocal import openapikey, serpapikey
 from langchain.llms import OpenAI
-from pdfloader import PDF_Loader
+from pdfloader import loadPDF
+from pdfloader import queryPDF
 
 # For utilizing agent search tools
 from langchain.agents import load_tools
@@ -33,22 +35,21 @@ def main():
 
     # search_template = PromptTemplate(
     #     input_variables=['search'],
-    #     template="You are a medical database search bot, search for scholarly and academic papers concerning {search}, leveragin"
+    #     template="You are a medical database search bot, search for scholarly and academic papers concerning {search} and grab the PDF link if possible"
     # )
 
     # search_memory = ConversationBufferMemory(input_key='topic', memory_key='chat_history')
 
     # search_chain = LLMChain(llm=llm, prompt=search_template, verbose=True, output_key='title', memory=search_memory)
 
-    vectorized_doc = PDF_Loader.loadPDF(url=link)
-
-    PDF_Loader.queryPDF(prompt, vectorized_doc)
-
     llm.temperature = 0.9
 
     if prompt:
         search_results = agent.run(prompt)
         st.write(search_results)
+        vectorized_doc = loadPDF(link)
+        queryPDF(prompt, vectorized_doc)
+        
 
 
 
