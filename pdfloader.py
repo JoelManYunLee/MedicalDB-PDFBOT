@@ -1,8 +1,8 @@
 #import dependencies
 
-from apikey import apikey 
 
 import os
+import apikey
 
 from langchain.document_loaders import OnlinePDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
