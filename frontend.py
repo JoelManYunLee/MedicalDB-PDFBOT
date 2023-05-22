@@ -1,6 +1,6 @@
 import os
 # from apikey import openapikey, serpapikey
-from apikeylocal import openapikey, serpapikey
+from apikey import openapikey, serpapikey
 from langchain.llms import OpenAI
 from pdfloader import loadPDF
 from pdfloader import queryPDF
@@ -16,42 +16,42 @@ from langchain.memory import ConversationBufferMemory
 
 # For frontend user interfacing with app
 import streamlit as st
+from streamlit_chat import message
 
 def main():
     os.environ['OPENAI_API_KEY'] = openapikey
-    os.environ['SERPAPI_API_KEY'] = serpapikey
+    os.environ['SERPAPI_API_KEY'] = serpapikey    
 
-    link = "https://arxiv.org/pdf/2302.03803.pdf"    
+    llm = OpenAI(temperature = 0.2)
 
-    llm = OpenAI(temperature = 0.0)
-
-    tool_names = ["serpapi", "arxiv"]
+    tool_names =  ["arxiv"]
     tools = load_tools(tool_names)
-    agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)
+    agent_memory = ConversationBufferMemory(memory_key='chat_history')
+    agent = initialize_agent(tools, llm, agent="conversational-react-description", verbose=True, memory=agent_memory)
+
 
     # Display the page title and the text box for the user to ask the question
     st.title('🦜 Search and query academic medical papers ')
     prompt = st.text_input(" What medical topic would you like to know about? ")
 
-    # search_template = PromptTemplate(
-    #     input_variables=['search'],
-    #     template="You are a medical database search bot, search for scholarly and academic papers concerning {search} and grab the PDF link if possible"
-    # )
 
-    # search_memory = ConversationBufferMemory(input_key='topic', memory_key='chat_history')
+    # save the chat history 
+    if 'answer' not in st.session_state:
+        st.session_state['answer'] = []
 
-    # search_chain = LLMChain(llm=llm, prompt=search_template, verbose=True, output_key='title', memory=search_memory)
-
-    llm.temperature = 0.9
-
+    if 'question' not in st.session_state:
+        st.session_state['question'] = [] 
+ 
     if prompt:
-        search_results = agent.run(prompt)
-        st.write(search_results)
-        vectorized_doc = loadPDF(link)
-        queryPDF(prompt, vectorized_doc)
-        
+        response = agent.run(prompt)
 
+        st.session_state.question.insert(0,prompt  )
+        st.session_state.answer.insert(0,response  )   
 
+        # Display the chat history
+        for i in range(len( st.session_state.question)):
+            message(st.session_state['question'][i], is_user=True)
+            message(st.session_state['answer'][i], is_user=False)
 
 if __name__ == '__main__':
     main()
